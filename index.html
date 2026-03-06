@@ -3,25 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capstone Project</title>
+    <title>TaskEZZ Reminder App</title>
+    <script>
+        // Web Audio API alarm functionality
+        let audioContext;
+        let alarmSound;
+
+        function playAlarm() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (!alarmSound) {
+                alarmSound = audioContext.createOscillator();
+                alarmSound.type = 'sine';
+                alarmSound.frequency.setValueAtTime(440, audioContext.currentTime);
+                alarmSound.connect(audioContext.destination);
+            }
+            alarmSound.start();
+            setTimeout(() => { alarmSound.stop(); }, 1000);
+        }
+    </script>
 </head>
 <body>
-    <h1>Alarm System</h1>
-    <button id="alarm-button">Set Alarm</button>
+    <h1>TaskEZZ Reminder App</h1>
+    <form id="reminderForm">
+        <input type="text" id="task" placeholder="Enter your task" required />
+        <input type="datetime-local" id="reminderTime" required />
+        <button type="submit">Set Reminder</button>
+    </form>
+    <ul id="reminderList"></ul>
 
     <script>
-        // Web Audio API to create an alarm sound
-        function playAlarmTone() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            oscillator.type = 'square'; // Type of wave
-            oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // Frequency in hertz
-            oscillator.connect(audioContext.destination);
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + 1); // Play sound for 1 second
+        const form = document.getElementById('reminderForm');
+        const reminderList = document.getElementById('reminderList');
+
+        function loadReminders() {
+            const reminders = JSON.parse(localStorage.getItem('reminders')) || [];
+            reminders.forEach(reminder => addReminderToList(reminder));
         }
 
-        document.getElementById('alarm-button').addEventListener('click', playAlarmTone);
+        function addReminderToList(reminder) {
+            const li = document.createElement('li');
+            li.textContent = `${reminder.task} at ${new Date(reminder.time).toLocaleString()}`;
+            reminderList.appendChild(li);
+            setTimeout(() => {
+                playAlarm();
+                li.textContent += ' (Reminder!)';
+            }, reminder.time - Date.now());
+        }
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const task = document.getElementById('task').value;
+            const reminderTime = new Date(document.getElementById('reminderTime').value).getTime();
+            const reminder = { task, time: reminderTime };
+            addReminderToList(reminder);
+            saveReminder(reminder);
+            form.reset();
+        });
+
+        function saveReminder(reminder) {
+            const reminders = JSON.parse(localStorage.getItem('reminders')) || [];
+            reminders.push(reminder);
+            localStorage.setItem('reminders', JSON.stringify(reminders));
+        }
+
+        loadReminders();
     </script>
 </body>
 </html>
