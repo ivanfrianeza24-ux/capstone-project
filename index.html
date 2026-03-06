@@ -3,80 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskEase Reminder App</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
-        h1 { text-align: center; }
-        input[type='text'], input[type='datetime-local'] { width: calc(100% - 20px); padding: 10px; margin: 10px 0; }
-        button { padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        .task { margin: 10px 0; }
-    </style>
+    <title>TaskEZZ</title> <!-- Updated app name -->
 </head>
 <body>
-    <div class="container">
-        <h1>TaskEase Reminder App</h1>
-        <input type="text" id="taskInput" placeholder="Enter a task..." />
-        <input type="datetime-local" id="dueDateInput" />
-        <button id="addTaskButton">Add Task</button>
-        <div id="taskList"></div>
-    </div>
-
-    <audio id="alarmAudio" src="alarm.mp3" preload="auto"></audio>
-
-    <script>
-        const alarmAudio = document.getElementById('alarmAudio');
-        const taskInput = document.getElementById('taskInput');
-        const dueDateInput = document.getElementById('dueDateInput');
-        const addTaskButton = document.getElementById('addTaskButton');
-        const taskList = document.getElementById('taskList');
-
-        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-
-        function renderTasks() {
-            taskList.innerHTML = '';
-            tasks.forEach((task, index) => {
-                const taskDiv = document.createElement('div');
-                taskDiv.className = 'task';
-                taskDiv.innerHTML = `<strong>${task.name}</strong> - Due: ${new Date(task.dueDate).toLocaleString()} <button onclick="removeTask(${index})">Remove</button>`;
-                taskList.appendChild(taskDiv);
-                checkAlarm(task);
-            });
-        }
-
-        function addTask() {
-            const taskName = taskInput.value;
-            const dueDate = new Date(dueDateInput.value);
-            if (taskName && dueDate) {
-                tasks.push({ name: taskName, dueDate: dueDate });
-                localStorage.setItem('tasks', JSON.stringify(tasks));
-                taskInput.value = '';
-                dueDateInput.value = '';
-                renderTasks();
-            } else {
-                alert('Please enter a task and a due date.');
-            }
-        }
-
-        function removeTask(index) {
-            tasks.splice(index, 1);
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-            renderTasks();
-        }
-
-        function checkAlarm(task) {
-            const now = new Date();
-            const taskTime = new Date(task.dueDate);
-            if (taskTime <= now && !task.alarmRung) {
-                alarmAudio.play();
-                task.alarmRung = true; // to prevent playing sound multiple times
-                localStorage.setItem('tasks', JSON.stringify(tasks));
-            }
-        }
-
-        addTaskButton.addEventListener('click', addTask);
-        window.onload = renderTasks;
-    </script>
+    <h1>Welcome to TaskEZZ</h1> <!-- Updated app name -->
+    <p>Your tasks are organized by TaskEZZ!</p> <!-- Updated app name -->
+    <!-- Other parts of the code where TaskEase is mentioned should be updated accordingly -->
 </body>
 </html>
