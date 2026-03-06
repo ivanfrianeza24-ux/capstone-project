@@ -3,72 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskEZZ Reminder App</title>
-    <script>
-        // Web Audio API alarm functionality
-        let audioContext;
-        let alarmSound;
-
-        function playAlarm() {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (!alarmSound) {
-                alarmSound = audioContext.createOscillator();
-                alarmSound.type = 'sine';
-                alarmSound.frequency.setValueAtTime(440, audioContext.currentTime);
-                alarmSound.connect(audioContext.destination);
-            }
-            alarmSound.start();
-            setTimeout(() => { alarmSound.stop(); }, 1000);
-        }
-    </script>
+    <title>TaskEase Reminder App</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        h1 { text-align: center; }
+        input[type='text'], input[type='datetime-local'] { width: calc(100% - 20px); padding: 10px; margin: 10px 0; }
+        button { padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .task { margin: 10px 0; }
+    </style>
 </head>
 <body>
-    <h1>TaskEZZ Reminder App</h1>
-    <form id="reminderForm">
-        <input type="text" id="task" placeholder="Enter your task" required />
-        <input type="datetime-local" id="reminderTime" required />
-        <button type="submit">Set Reminder</button>
-    </form>
-    <ul id="reminderList"></ul>
+    <div class="container">
+        <h1>TaskEase Reminder App</h1>
+        <input type="text" id="taskInput" placeholder="Enter a task..." />
+        <input type="datetime-local" id="dueDateInput" />
+        <button id="addTaskButton">Add Task</button>
+        <div id="taskList"></div>
+    </div>
+
+    <audio id="alarmAudio" src="alarm.mp3" preload="auto"></audio>
 
     <script>
-        const form = document.getElementById('reminderForm');
-        const reminderList = document.getElementById('reminderList');
+        const alarmAudio = document.getElementById('alarmAudio');
+        const taskInput = document.getElementById('taskInput');
+        const dueDateInput = document.getElementById('dueDateInput');
+        const addTaskButton = document.getElementById('addTaskButton');
+        const taskList = document.getElementById('taskList');
 
-        function loadReminders() {
-            const reminders = JSON.parse(localStorage.getItem('reminders')) || [];
-            reminders.forEach(reminder => addReminderToList(reminder));
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        function renderTasks() {
+            taskList.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = 'task';
+                taskDiv.innerHTML = `<strong>${task.name}</strong> - Due: ${new Date(task.dueDate).toLocaleString()} <button onclick="removeTask(${index})">Remove</button>`;
+                taskList.appendChild(taskDiv);
+                checkAlarm(task);
+            });
         }
 
-        function addReminderToList(reminder) {
-            const li = document.createElement('li');
-            li.textContent = `${reminder.task} at ${new Date(reminder.time).toLocaleString()}`;
-            reminderList.appendChild(li);
-            setTimeout(() => {
-                playAlarm();
-                li.textContent += ' (Reminder!)';
-            }, reminder.time - Date.now());
+        function addTask() {
+            const taskName = taskInput.value;
+            const dueDate = new Date(dueDateInput.value);
+            if (taskName && dueDate) {
+                tasks.push({ name: taskName, dueDate: dueDate });
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                taskInput.value = '';
+                dueDateInput.value = '';
+                renderTasks();
+            } else {
+                alert('Please enter a task and a due date.');
+            }
         }
 
-        form.addEventListener('submit', function (event) {
-            event.preventDefault();
-            const task = document.getElementById('task').value;
-            const reminderTime = new Date(document.getElementById('reminderTime').value).getTime();
-            const reminder = { task, time: reminderTime };
-            addReminderToList(reminder);
-            saveReminder(reminder);
-            form.reset();
-        });
-
-        function saveReminder(reminder) {
-            const reminders = JSON.parse(localStorage.getItem('reminders')) || [];
-            reminders.push(reminder);
-            localStorage.setItem('reminders', JSON.stringify(reminders));
+        function removeTask(index) {
+            tasks.splice(index, 1);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTasks();
         }
 
-        loadReminders();
+        function checkAlarm(task) {
+            const now = new Date();
+            const taskTime = new Date(task.dueDate);
+            if (taskTime <= now && !task.alarmRung) {
+                alarmAudio.play();
+                task.alarmRung = true; // to prevent playing sound multiple times
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
+        }
+
+        addTaskButton.addEventListener('click', addTask);
+        window.onload = renderTasks;
     </script>
 </body>
 </html>
